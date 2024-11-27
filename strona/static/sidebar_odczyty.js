@@ -282,41 +282,24 @@ document.addEventListener('DOMContentLoaded', function () {
         
         function przetworzDaneDlaMiesiaca(readings, miesiac) {
             const [year, month] = miesiac.split('-');  // Podział na rok i miesiąc
-            const daysInMonth = new Date(year, month, 0).getDate();  // Liczba dni w wybranym miesiącu
+            const daysInMonth = new Date(year, month, 0).getDate();  // Liczba dni w miesiącu
         
-            
-            const labels = [];
-            const values = Array(daysInMonth).fill(0);  // Domyślnie 0 dla wszystkich dni
+            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);  // Wszystkie dni miesiąca
+            const values = Array(daysInMonth).fill(0);  // Domyślnie wartości 0 dla wszystkich dni
         
-            // Przetwarzanie danych i obliczanie średnich wartości dla każdego dnia
+            // Przetwarzanie danych z API i przypisywanie wartości do odpowiednich dni
             readings.forEach(reading => {
-                const date = new Date(reading.data_zapisu);  // Data z odczytu
-                const readingMonth = date.getMonth() + 1;  // Miesiące indeksowane od 0
-                const readingDay = date.getDate();  // Dzień odczytu
+                const date = new Date(reading.data_zapisu);  // Parsowanie daty z odczytu
+                const day = date.getDate();  // Dzień odczytu
         
-                if (readingMonth === parseInt(month)) {  
-                    labels[readingDay - 1] = readingDay;  // Ustawienie etykiety dla tego dnia
-        
-                    // Sumowanie odczytów dla tego dnia
-                    if (values[readingDay - 1] === 0) {
-                        values[readingDay - 1] = reading.srednia_wartosc;
-                    } else {
-                        values[readingDay - 1] += reading.srednia_wartosc;
-                    }
-                }
-            });
-        
-            // Obliczanie średniej dla każdego dnia
-            values.forEach((value, index) => {
-                if (value !== 0) {
-                    // Obliczenie średniej na podstawie liczby odczytów danego dnia
-                    const dayReadingsCount = readings.filter(r => new Date(r.data_zapisu).getDate() === index + 1).length;
-                    values[index] /= dayReadingsCount;
-                }
+                // Przypisanie wartości do odpowiedniego indeksu (dzień - 1)
+                values[day - 1] = reading.srednia_wartosc;
             });
         
             return { labels, values };
         }
+        
+        
 
         function sendRokData(rok) {
             fetch('/api/rok', {

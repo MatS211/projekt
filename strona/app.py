@@ -173,41 +173,30 @@ def odczyty_dzien():
 
 @app.route('/api/miesiac', methods=['POST'])
 def get_month_data():
-    data = request.get_json()
-    miesiac = data['miesiac']
-    prad = data['prad']
-    # Parsowanie miesiąca
+    miesiac = request.json.get('miesiac')
     year, month = map(int, miesiac.split('-'))
-    print(f"ROK dla mnie: {year}")
-    print(f"Miesiąc dla mnie {month}")
-    # Lista wszystkich dni w miesiącu
-    days_in_month = calendar.monthrange(year, month)[1]
-    all_days = [f"{year}-{month:02d}-{day:02d}" for day in range(1, days_in_month + 1)]
-
-    # Zapytanie o dane z bazy
-    query = """
-    SELECT DATE(data_zapisu) AS dzien, AVG(wartosc) AS srednia_wartosc
-    FROM odczyty
-    WHERE YEAR(data_zapisu) = %s AND MONTH(data_zapisu) = %s AND id_prad = %s
-    GROUP BY DATE(data_zapisu)
-    """
     connection = get_db_connection()
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(query, (year, month, prad))
-    readings = cursor.fetchall()
+    cursor = connection.cursor()
+    # Kwerenda SQL z zamianą NULL na 0
+    query = """
+        SELECT 
+            DAY(data_zapisu) AS dzien, 
+            ROUND(IFNULL(AVG(wartosc), 0), 2) AS srednia_wartosc
+        FROM odczyty
+        WHERE YEAR(data_zapisu) = %s AND MONTH(data_zapisu) = %s
+        GROUP BY dzien
+    """
+    cursor.execute(query, (year, month))
+    data = cursor.fetchall()
 
-    # Przekształcenie danych w słownik do porównania z wszystkimi dniami
-    readings_dict = {reading['dzien']: reading['srednia_wartosc'] for reading in readings}
+    # Konwersja wyników na format JSON
+    readings = [
+        {"data_zapisu": f"{year}-{month:02d}-{dzien:02d}", "srednia_wartosc": srednia_wartosc}
+        for dzien, srednia_wartosc in data
+    ]
 
-    # Przygotowanie odpowiedzi - dla każdego dnia w miesiącu dodaje średnią lub 0
-    result = []
-    for day in all_days:
-        result.append({
-            'dzien': day,
-            'srednia_wartosc': readings_dict.get(day, 0)  # Wstawia 0, jeśli brak danych
-        })
+    return jsonify({"readings": readings})
 
-    return jsonify({'readings': result})
 
 @app.route('/api/godzina', methods=['POST'])
 def odczyty_godzina():
