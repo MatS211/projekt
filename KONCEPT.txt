@@ -1,0 +1,15 @@
+									NAV
+
+PANEL BOCZNY (zwijający się)
+	
+*konkrety parmetr							TU INPUTY Z WYŚWIETLAJĄCYM SIĘ DO WYBORU
+	- dzien			
+	- miesiac
+	- rok
+	- okres czasu (wybrany)
+*konkrety parmetr							Tu się wyświetla ten wykres
+*konkrety parmetr
+*konkrety parmetr
+*konkrety parmetr
+
+dzienne zestawienie coili : coil -> zestawienie dzienne -> tabela i rekordy w których ccoil był włączony

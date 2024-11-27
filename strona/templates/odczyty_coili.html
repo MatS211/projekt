@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}" />
+    <title>CEWKI</title>
+    <!-- DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <!-- Time picker -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pl.js"></script>    
+</head>
+<body>
+    <header>
+        <div id="nav">
+            <img src="{{ url_for('static', filename='sidebar.png')}}" id="sidebar-toggle" alt="sidebar">
+            <a href="/">Tabele informacyjne</a>
+            <a href="/odczyty">Odczyty wartości parametrów prądu</a>
+        </div>
+    </header>
+    <aside id="sidebar">
+        <ul id="lista-parametrow">
+            {% for coil in coils %}
+                <li class="parametr">
+                    {{ coil[0] }}
+                    <ul class="opcje ukryty">
+                        <li class="opcja" data-opcja="zestawienie dzienne">Zestawienie dzienne</li>
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    </aside>
+    <main>
+        <div id="wybory">
+            <h3 id="naglowek" style="display: none;"></h3><br>
+            <p id="czas" style="display: none;"></p>
+            <input id="input-data" style="display: none;">    
+            <input type="submit" value="POKAŻ" id="submit" style="display: none;">    
+        </div>
+        <div id="zestawienie-dzienne" style="display: none;">
+            <table id="myTable3" class="dataTable">
+                <thead>
+                    <tr class="naglowki">
+                        <th>Status</th>
+                        <th>Czas rozpoczęcia</th>
+                        <th>Czas zakończenia</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <footer>
+    </footer>
+    <script src="{{ url_for('static', filename='sidebar_coils.js') }}"></script>
+</body>
+</html>

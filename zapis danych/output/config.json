@@ -1,0 +1,68 @@
+{
+    "SERVER_HOST": "192.168.1.21",
+    "SERVER_PORT": 502,
+    "UNIT_ID": 1,
+    "DATABASE_CONNECTION": "DRIVER={SQL Server};SERVER=localhost;DATABASE=projekt_pac;UID=user;PWD=",
+    "VARIABLES":{
+        "FLOATS":{
+            "Prad":{
+                "L1":{
+                    "Offset": 0,
+                    "Jednostka": "A"
+                },
+                "L2":{
+                    "Offset": 1,
+                    "Jednostka": "A"
+                },
+                "L3":{
+                    "Offset": 2,
+                    "Jednostka": "A"
+                },
+                "N":{
+                    "Offset": 3,
+                    "Jednostka": "A"
+                },
+                "Asymetria":{
+                    "Offset": 4,
+                    "Jednostka": "%"
+                },
+                "Czestotliwosc sieci":{
+                    "Offset": 5,
+                    "Jednostka": "Hz"
+                }
+            }
+        },
+        "COILS":{
+            "Pompa 1 zalaczona": {
+                "Offset": 0,
+                "Typ": "Output",
+                "Opis": "Wskazuje stan pracy urzadzenia"
+            },
+            "Zawor 2 otwarty":{
+                "Offset": 1,
+                "Typ": "Output",
+                "Opis": "Wskazuje stan pracy urzadzenia"
+            },
+            "Alarm przegrzania silnika":{
+                "Offset": 2,
+                "Typ": "Output",
+                "Opis":"Sygnalizuje przegrzanie silnika"
+            },
+            "Czujnik poziomu 1":{
+                "Offset": 3,
+                "Typ": "Output",
+                "Opis":"Informuje o stanie poziomu w zbiorniku 1"
+            },
+            "Lampka sygnalizacyjna":{
+                "Offset": 4,
+                "Typ": "Output",
+                "Opis":"Wskazuje stan pracy urzadzenia"
+            },
+            "Syrena alarmowa":{
+                "Offset": 5,
+                "Typ": "Output",
+                "Opis":"Uruchamia sygnal dzwiekowy w przypadku alarmu"
+            }
+        }
+    }
+}

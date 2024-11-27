@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}" />
+    <title>TABELE INFORMACYJNE</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- JS i jQ -->
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+    <header>
+        <div id="nav">
+            <a href="/odczyty">Odczyty wartości parametrów prądu</a>
+            <a href="/odczyty_coili">Odczyty cewek</a>
+        </div>
+    </header>
+    <main>
+        <h3>CEWKI</h3>
+        <table id="myTable" class="dataTable">
+            <thead>
+                <tr class="naglowki">
+                    <!-- <th>ID</th> -->
+                    <th>Nazwa</th>
+                    <th>Offset</th>
+                    <th>Typ</th>
+                    <th>Opis</th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% for coil in coils %}
+                <tr id="coil-{{ coil[0] }}" class="rekord">
+                    <!-- <td>{{ coil[0] }}</td> -->
+                    <td>{{ coil[1] }}</td>
+                    <td>{{ coil[2] }}</td>
+                    <td>{{ coil[3] }}</td>
+                    <td>{{ coil[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <hr>
+        <h3>PARAMETRY PRĄDU</h3>
+        <table id="myTable2" class="dataTable">
+            <thead>
+                <tr class="naglowki">
+                    <!-- <th>Id</th> -->
+                    <th>Nazwa</th>
+                    <th>Jednostka</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in slownik %}
+                <tr id="slownik-{{ s[0] }}" class="rekord">
+                    <!-- <td>{{ s[0] }}</td> -->
+                    <td>{{ s[1] }}</td>
+                    <td>{{ s[2] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+    <footer>
+
+    </footer>
+    <script>
+        $(document).ready(function() {
+            $('.dataTable').DataTable({
+                "paging": true,  // Paginacja
+                "searching": true, // Wyszukiwanie
+                "ordering": true,  // Sortowanie
+                order: [[1, 'asc']],
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/pl.json"
+                }
+            });
+            
+        });
+    </script>
+</body>
+</html>

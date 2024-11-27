@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>ODCZYT WARTOŚCI PARAMETRÓW PRĄDU</title>
+    <!-- time picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Chart.js  -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CHart do linii standardowych wartosci -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
+</head>
+<body>
+    <header>
+        <div id="nav">
+            <img id="sidebar-toggle" src="{{ url_for('static', filename='sidebar.png')}}" alt="sidebar">
+            <a href="/">Tabele informacyjne</a>
+            <a href="/odczyty_coili">Odczyty cewek</a>
+        </div>
+    </header>
+    <aside id="sidebar">
+        <ul id="lista-parametrow">
+            {% for parametr in parametry %}
+                <li class="parametr">
+                    {{ parametr[0] }}
+                    <!-- Lista opcji związanych z parametrem -->
+                    <ul class="opcje ukryty">
+                        <li class="opcja" data-opcja="godzina">Godziny</li> 
+                        <li class="opcja" data-opcja="dzien">Dzień (24h)</li>
+                        <li class="opcja" data-opcja="miesiac">Miesiąc</li>
+                        <li class="opcja" data-opcja="rok">Rok</li>
+                        <li class="opcja" data-opcja="przedzial-dni">Przedział dni</li>
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    </aside>
+    <main>
+        <div id="wybory">
+            <h3 id="naglowek" style="display: none;"></h3><br>
+            <input id="input-data-3" style="display: none;" required><br>
+            <p id="czas" style="display: none;"></p>
+            <input id="input-data" style="display: none;" required>    
+            <p id="czas2" style="display: none;"></p>
+            <input id="input-data-2" style="display: none;" required><br><br>
+            <input type="submit" value="POKAŻ" id="submit" style="display: none;">    
+        </div>
+        <div id="spinner" class="spinner" style="display: none;">
+            <div class="loader"></div>
+        </div>          
+        <canvas id="wykres" width="1000" height="600"></canvas>
+    </main>
+    <footer>
+    </footer>
+    <script src="{{ url_for('static', filename='sidebar_odczyty.js') }}"></script>
+
+</body>
+</html>
