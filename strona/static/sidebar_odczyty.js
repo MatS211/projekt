@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     let selectedPrad = null;
-    
+    let chartInstance = null;
     // Toggle dla sidebara
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const sidebar = document.getElementById('sidebar');
@@ -298,10 +298,8 @@ document.addEventListener('DOMContentLoaded', function () {
         
             return { labels, values };
         }
-        
-        
-
-        function sendRokData(rok) {
+        // POPRAW ŻEBY SIĘ 0 NA INNYCH MIESIĄCACH POKAZYWAŁO
+        function sendRokData(rok) { 
             fetch('/api/rok', {
                 method: 'POST',
                 headers: {
@@ -312,33 +310,51 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => { 
                 console.log('Dane dla roku:', data);
-                
-                const { labels, values } = przetworzDaneDlaWykresu(data.readings);
-            
-                rysujWykres(labels, values, `Wykres dla roku ${rok}`);
-
+        
+                // Przetwarzanie danych
+                const labels = data.readings.map(item => `Miesiąc ${item.miesiac}`);
+                const values = data.readings.map(item => item.srednia);
+        
+                // Tworzenie wykresu
+                const ctx = document.getElementById('wykres').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Średnia wartość dla roku ${rok}`,
+                            data: values,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true
+                            },
+                            title: {
+                                display: true,
+                                text: `Wykres dla roku ${rok}`
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
             })
             .catch(error => console.error('Błąd:', error));
         }
-
-        function sendGodzinaData(godzinaStart, godzinaEnd, dzien) {
-            fetch('/api/godzina', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ prad: selectedPrad, godzinaStart: godzinaStart, godzinaEnd: godzinaEnd, dzien: dzien })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Dane dla godzin:', data);
-                
-                const { labels, values } = przetworzDaneDlaWykresu(data.readings);
-            
-                rysujWykres(labels, values, `Wykres dla godzin ${godzinaStart} - ${godzinaEnd} z dnia ${dzien}`);
-            })
-            .catch(error => console.error('Błąd:', error));
-        }
+        
 
         function sendPrzedzialDniData(dzienStart, dzienEnd) {
             fetch('/api/przedzial-dni', {

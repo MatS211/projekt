@@ -173,27 +173,37 @@ def odczyty_dzien():
 
 @app.route('/api/miesiac', methods=['POST'])
 def get_month_data():
-    miesiac = request.json.get('miesiac')
+    data_json = request.get_json()
+    miesiac = data_json.get('miesiac')
     year, month = map(int, miesiac.split('-'))
+    prad = data_json.get('prad')  # Nazwa parametru
     connection = get_db_connection()
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT id_prad FROM slownik WHERE nazwa = %s", (prad,))
+    parametr = cursor.fetchone()
+
+    if not parametr:
+        return jsonify({'status': 'error', 'message': 'Parametr o podanej nazwie nie istnieje.'})
+
+    id_prad = parametr['id_prad']
+
     # Kwerenda SQL z zamianą NULL na 0
     query = """
         SELECT 
             DAY(data_zapisu) AS dzien, 
             ROUND(IFNULL(AVG(wartosc), 0), 2) AS srednia_wartosc
         FROM odczyty
-        WHERE YEAR(data_zapisu) = %s AND MONTH(data_zapisu) = %s
+        WHERE YEAR(data_zapisu) = %s AND MONTH(data_zapisu) = %s AND id_prad = %s
         GROUP BY dzien
     """
-    cursor.execute(query, (year, month))
+    cursor.execute(query, (year, month, id_prad))
     data = cursor.fetchall()
 
-    # Konwersja wyników na format JSON
     readings = [
-        {"data_zapisu": f"{year}-{month:02d}-{dzien:02d}", "srednia_wartosc": srednia_wartosc}
-        for dzien, srednia_wartosc in data
+    {"data_zapisu": f"{year}-{month:02d}-{row['dzien']:02d}", "srednia_wartosc": row['srednia_wartosc']}
+    for row in data
     ]
+
 
     return jsonify({"readings": readings})
 
@@ -282,6 +292,38 @@ def odczyty_przedzial():
         return jsonify({'status': 'error', 'message': 'Brak odczytów w podanym przedziale dni.'})
 
     return jsonify({'status': 'success', 'readings': readings})
+
+@app.route('/api/rok', methods=['POST'])
+def odczyty_rok():
+    data = request.get_json()
+    prad = data.get('prad')
+    rok = data.get('rok')
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("SELECT id_prad FROM slownik WHERE nazwa = %s", (prad,))
+    parametr = cursor.fetchone()
+
+    if not parametr:
+        return jsonify({'status': 'error', 'message': 'Parametr o podanej nazwie nie istnieje.'})
+
+    id_prad = parametr['id_prad']
+
+    query = """
+        SELECT 
+            MONTH(data_zapisu) AS miesiac, 
+            IFNULL(AVG(wartosc), 0) AS srednia 
+        FROM odczyty
+        WHERE YEAR(data_zapisu) = %s AND id_prad = %s
+        GROUP BY MONTH(data_zapisu)
+        ORDER BY miesiac
+    """
+    cursor.execute(query, (rok, id_prad,))
+    result = cursor.fetchall()
+    
+    connection.close()
+    return jsonify({'readings': result})
+
 
 
 if __name__ == '__main__':
