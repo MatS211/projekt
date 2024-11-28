@@ -48,33 +48,85 @@ document.addEventListener('DOMContentLoaded', function () {
         // Konfiguracja na podstawie wybranej opcji
         switch (nazwaOpcji) {
             case "dzien":
-                configureForm("WYBIERZ DZIEŃ</br>" + selectedPrad + "</br>", "date", false, false, false, false);
+                configureForm("WYBIERZ DZIEŃ</br>" + selectedPrad + "</br>", "text", false, false, false, false);
                 submit.addEventListener('click', () => sendDzienData(input.value)); // Funkcja dla "dzien"
+                flatpickr(input, { 
+                    dateFormat: "Y-m-d",
+                    minDate: "2024-11-18",
+                    maxDate: "today",
+                    locale: "pl",
+                    disableMobile: true // Wymuszenie używania kalendarza
+                });
                 break;
             case "miesiac":
-                configureForm("WYBIERZ MIESIĄC</br>" + selectedPrad + "</br>", "month", false, false, false);
+                configureForm("WYBIERZ MIESIĄC</br>" + selectedPrad + "</br>", "text", false, false, false);
                 submit.addEventListener('click', () => sendMiesiacData(input.value)); // Funkcja dla "miesiac"
+                flatpickr(input, { 
+                    dateFormat: "Y-m",
+                    minDate: "2024-11",
+                    maxDate: "today",
+                    locale: "pl",
+                    disableMobile: true // Wymuszenie używania kalendarza
+                });
                 break;
             case "rok":
-                configureForm("WYBIERZ ROK</br>" + selectedPrad + "</br>", "number", false, false, false);
-                input.min = "2024";
-                input.max = "2025";
+                configureForm("WYBIERZ ROK</br>" + selectedPrad + "</br>", "text", false, false, false);
                 submit.addEventListener('click', () => sendRokData(input.value)); // Funkcja dla "rok"
+                flatpickr(input, { 
+                    dateFormat: "Y",
+                    minDate: "2024",
+                    maxDate: "today",
+                    locale: "pl",
+                    disableMobile: true // Wymuszenie używania kalendarza
+                });
                 break;
             case "godzina":
-                configureForm("WYBIERZ DZIEŃ I PRZEDZIAŁ GODZIN</br>" + selectedPrad + "</br>", "time", true, true, true, "Godzina początkowa: ", "Godzina końcowa: ");
+                configureForm("WYBIERZ DZIEŃ I PRZEDZIAŁ GODZIN</br>" + selectedPrad + "</br>", "text", true, true, true, "Godzina początkowa: ", "Godzina końcowa: ");
                 submit.addEventListener('click', () => sendGodzinaData(input.value, input2.value, input3.value)); // Funkcja dla "godzina"
+                flatpickr(input, { 
+                    dateFormat: "H:i",
+                    enableTime: true,
+                    noCalendar: true,
+                    locale: "pl",
+                    disableMobile: true // Wymuszenie używania kalendarza
+                });
+                flatpickr(input2, { 
+                    dateFormat: "H:i",
+                    enableTime: true,
+                    noCalendar: true,
+                    locale: "pl",
+                    disableMobile: true // Wymuszenie używania kalendarza
+                });
+                flatpickr(input3, { 
+                    dateFormat: "Y-m-d",
+                    minDate: "2024-11-18",
+                    maxDate: "today",
+                    locale: "pl",
+                    disableMobile: true // Wymuszenie używania kalendarza
+                });
                 break;
             case "przedzial-dni":
-                configureForm("WYBIERZ PRZEDZIAŁ DNI</br>" + selectedPrad + "</br>", "date", true, false, true, "Dzień początkowy", "Dzień końcowy");
+                configureForm("WYBIERZ PRZEDZIAŁ DNI</br>" + selectedPrad + "</br>", "text", true, false, true, "Dzień początkowy", "Dzień końcowy");
                 submit.addEventListener('click', () => sendPrzedzialDniData(input.value, input2.value)); // Funkcja dla "przedzial-dni"
+                flatpickr(input, { 
+                    dateFormat: "Y-m-d",
+                    minDate: "2024-11-18",
+                    maxDate: "today",
+                    locale: "pl",
+                    disableMobile: true // Wymuszenie używania kalendarza
+                });
+                flatpickr(input2, { 
+                    dateFormat: "Y-m-d",
+                    minDate: "2024-11-18",
+                    maxDate: "today",
+                    locale: "pl",
+                    disableMobile: true // Wymuszenie używania kalendarza
+                });
                 break;
             default:
                 naglowek.textContent = "BŁĄD";
                 naglowek.style.display = 'inline';
         }
-
-        // Funkcja do usuwania poprzedniego wykresu
 
         // Funkcje do wysyłania danych do Flask
 
@@ -637,29 +689,37 @@ document.addEventListener('DOMContentLoaded', function () {
         submit.style.display = 'inline';
     }   
     
-    // function fetchData(url, options = {}) {
-    //     showSpinner(); // Pokaż spinner przed rozpoczęciem fetch
-    //     return fetch(url, options)
-    //         .then(response => {
-    //             if (!response.ok) {
-    //                 throw new Error(`HTTP error! status: ${response.status}`);
-    //             }
-    //             return response.json();
-    //         })
-    //         .catch(error => {
-    //             console.error('Błąd:', error);
-    //         })
-    //         .finally(() => {
-    //             hideSpinner(); // Ukryj spinner po zakończeniu fetch
-    //         });
-    // }
+    function fetchData(url, options = {}) {
+        showSpinner(); // Pokaż spinner przed rozpoczęciem fetch
+        return fetch(url, options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                // Sprawdzamy, czy odpowiedź jest w formacie JSON
+                const contentType = response.headers.get('Content-Type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    throw new Error('Odpowiedź nie jest w formacie JSON');
+                }
+            })
+            .catch(error => {
+                console.error('Błąd:', error);
+            })
+            .finally(() => {
+                hideSpinner(); // Ukryj spinner po zakończeniu fetch
+            });
+    }
     
-    // function showSpinner() {
-    //     document.getElementById('spinner').style.display = 'flex';
-    // }
     
-    // function hideSpinner() {
-    //     document.getElementById('spinner').style.display = 'none';
-    // }
+    
+    function showSpinner() {
+        document.getElementById('spinner').style.display = 'flex';
+    }
+    
+    function hideSpinner() {
+        document.getElementById('spinner').style.display = 'none';
+    }
     
 });
