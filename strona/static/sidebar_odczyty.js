@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     let selectedPrad = null;
     let chartInstance = null;
+    
     // Toggle dla sidebara
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const sidebar = document.getElementById('sidebar');
@@ -49,32 +50,24 @@ document.addEventListener('DOMContentLoaded', function () {
             case "dzien":
                 configureForm("WYBIERZ DZIEŃ</br>" + selectedPrad + "</br>", "date", false, false, false, false);
                 submit.addEventListener('click', () => sendDzienData(input.value)); // Funkcja dla "dzien"
-                console.log(input.value);
                 break;
             case "miesiac":
                 configureForm("WYBIERZ MIESIĄC</br>" + selectedPrad + "</br>", "month", false, false, false);
                 submit.addEventListener('click', () => sendMiesiacData(input.value)); // Funkcja dla "miesiac"
-                console.log(input.value);
                 break;
             case "rok":
                 configureForm("WYBIERZ ROK</br>" + selectedPrad + "</br>", "number", false, false, false);
                 input.min = "2024";
                 input.max = "2025";
                 submit.addEventListener('click', () => sendRokData(input.value)); // Funkcja dla "rok"
-                console.log(input.value);
                 break;
             case "godzina":
                 configureForm("WYBIERZ DZIEŃ I PRZEDZIAŁ GODZIN</br>" + selectedPrad + "</br>", "time", true, true, true, "Godzina początkowa: ", "Godzina końcowa: ");
                 submit.addEventListener('click', () => sendGodzinaData(input.value, input2.value, input3.value)); // Funkcja dla "godzina"
-                console.log(input.value);
-                console.log(input2.value);
-                console.log(input3.value);
                 break;
             case "przedzial-dni":
                 configureForm("WYBIERZ PRZEDZIAŁ DNI</br>" + selectedPrad + "</br>", "date", true, false, true, "Dzień początkowy", "Dzień końcowy");
                 submit.addEventListener('click', () => sendPrzedzialDniData(input.value, input2.value)); // Funkcja dla "przedzial-dni"
-                console.log(input.value);
-                console.log(input2.value);
                 break;
             default:
                 naglowek.textContent = "BŁĄD";
@@ -82,15 +75,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Funkcja do usuwania poprzedniego wykresu
-        function clearPreviousChart() {
-            const ctx = document.getElementById('wykres').getContext('2d');
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);  // Usuwa poprzedni wykres    
-        }
 
         // Funkcje do wysyłania danych do Flask
 
         function sendDzienData(dzien) {
-            clearPreviousChart();
             fetch('/api/dzien', {
                 method: 'POST',
                 headers: {
@@ -120,10 +108,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         labels[i] = `${i}:00`;
                     }
                 }
-        
+                
+                if (chartInstance) {
+                    chartInstance.destroy();
+                } 
+
                 // Rysowanie wykresu
                 const ctx = document.getElementById('wykres').getContext('2d');
-                new Chart(ctx, {
+                chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels, // Etykiety (godziny)
@@ -210,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function () {
         
         
         function sendMiesiacData(miesiac) {
-            clearPreviousChart();
             fetch('/api/miesiac', {
                 method: 'POST',
                 headers: {
@@ -224,9 +215,13 @@ document.addEventListener('DOMContentLoaded', function () {
         
                 const { labels, values } = przetworzDaneDlaMiesiaca(data.readings, miesiac);
                 
+                if (chartInstance) {
+                    chartInstance.destroy();
+                } 
+
                 // Funkcja rysująca wykres
                 const ctx = document.getElementById('wykres').getContext('2d');
-                new Chart(ctx, {
+                chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
@@ -289,8 +284,8 @@ document.addEventListener('DOMContentLoaded', function () {
         
             // Przetwarzanie danych z API i przypisywanie wartości do odpowiednich dni
             readings.forEach(reading => {
-                const date = new Date(reading.data_zapisu);  // Parsowanie daty z odczytu
-                const day = date.getDate();  // Dzień odczytu
+                const date = new Date(reading.data_zapisu);
+                const day = date.getDate();
         
                 // Przypisanie wartości do odpowiedniego indeksu (dzień - 1)
                 values[day - 1] = reading.srednia_wartosc;
@@ -298,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
             return { labels, values };
         }
-        // POPRAW ŻEBY SIĘ 0 NA INNYCH MIESIĄCACH POKAZYWAŁO
+
         function sendRokData(rok) { 
             fetch('/api/rok', {
                 method: 'POST',
@@ -312,12 +307,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('Dane dla roku:', data);
         
                 // Przetwarzanie danych
-                const labels = data.readings.map(item => `Miesiąc ${item.miesiac}`);
+                const labels = data.readings.map(item => `${rok}-${item.miesiac}`);
                 const values = data.readings.map(item => item.srednia);
-        
+                
+                if (chartInstance) {
+                    chartInstance.destroy();
+                } 
+
                 // Tworzenie wykresu
                 const ctx = document.getElementById('wykres').getContext('2d');
-                new Chart(ctx, {
+                chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
@@ -354,8 +353,165 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => console.error('Błąd:', error));
         }
+
+        function sendGodzinaData(godzinaStart, godzinaEnd, dzien) {
+            if (godzinaStart >= godzinaEnd) {
+                console.error('Godzina początkowa nie może być późniejsza niż godzina końcowa.');
+                return;
+            }
+            // Wysyłanie żądania do API
+            fetch('/api/godzina', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prad: selectedPrad,
+                    dzien: dzien,
+                    godzinaStart: godzinaStart,
+                    godzinaEnd: godzinaEnd
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'error') {
+                    console.error('Błąd:', data.message);
+                    return;
+                }
+        
+                console.log('Dane dla przedziału godzinowego:', data.readings);
+                
+                // Przetwarzanie danych 
+                const labels = generateTimeLabels(godzinaStart, godzinaEnd);
+
+                const values = data.readings.map(item => item.wartosc);
+               
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+        
+                const ctx = document.getElementById('wykres').getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Wartości w przedziale godzinowym (${godzinaStart} - ${godzinaEnd})`,
+                            data: values,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true
+                            },
+                            title: {
+                                display: true,
+                                text: `Wykres dla przedziału godzinowego ${godzinaStart} - ${godzinaEnd}`
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Czas'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Wartość'
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Błąd:', error));
+        }
         
 
+
+        function generateTimeLabels(godzinaStart, godzinaEnd) {
+            // Zamiana godzin na obiekty Date
+            const startDate = new Date(`2024-11-28T${godzinaStart}:00`);
+            const endDate = new Date(`2024-11-28T${godzinaEnd}:00`);
+            
+            // Obliczenie różnicy
+            const timeDifference = (endDate - startDate) / (1000 * 60);
+
+            let interval;
+            if (timeDifference <= 60) {
+                interval = 2; // Dla 1 godziny
+            } else {
+                // Zwiększamy interwał o 3 minuty na każdy dodatkowy przedział 60 minut
+                interval = 2 + Math.floor(timeDifference / 60) * 3;
+            
+                if (interval > 45) {
+                    interval = 45;
+                }
+            }
+        
+            
+            const labels = [];
+            let currentTime = startDate;
+            
+            while (currentTime <= endDate) {
+                labels.push(currentTime.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }));
+                currentTime = new Date(currentTime.getTime() + interval * 60 * 1000);
+            }
+        
+            return labels;
+        }
+
+        
+        function aggregateData(data, aggregationMethod = 'average') {
+            const aggregatedData = [];
+            const aggregatedLabels = [];
+            let sum = 0;
+            let count = 0;
+            let min = Number.MAX_VALUE;
+            let max = -Number.MAX_VALUE;
+        
+            // Grupowanie danych w przedziały dni
+            for (let i = 0; i < data.length; i++) {
+                sum += data[i].wartosc;
+                min = Math.min(min, data[i].wartosc);
+                max = Math.max(max, data[i].wartosc);
+                count++;
+        
+                // Każdy punkt danych reprezentuje jeden dzień
+                if (i === data.length - 1 || new Date(data[i].data_zapisu).getDate() !== new Date(data[i+1].data_zapisu).getDate()) {
+                    // Obliczanie agregacji
+                    if (aggregationMethod === 'average') {
+                        aggregatedData.push(sum / count);
+                    } else if (aggregationMethod === 'max') {
+                        aggregatedData.push(max);
+                    } else if (aggregationMethod === 'min') {
+                        aggregatedData.push(min);
+                    }
+        
+                    // Dodajemy etykietę (np. datę)
+                    aggregatedLabels.push(new Date(data[i].data_zapisu).toLocaleDateString('pl-PL'));
+        
+                    sum = 0;
+                    count = 0;
+                    min = Number.MAX_VALUE;
+                    max = -Number.MAX_VALUE;
+                }
+            }
+        
+            return { labels: aggregatedLabels, data: aggregatedData };
+        }
+
+        
         function sendPrzedzialDniData(dzienStart, dzienEnd) {
             fetch('/api/przedzial-dni', {
                 method: 'POST',
@@ -366,19 +522,76 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then(response => response.json())
               .then(data => {
                 console.log('Dane dla przedziału dni:', data);
-                const { labels, values } = przetworzDaneDlaWykresu(data.readings);
-            
-                rysujWykres(labels, values, `Wykres dla dni od ${dzienStart} do ${dzienEnd}`);
-            })
-              .catch(error => console.error('Błąd:', error));
-        }
-    }
+                const { labels, data: aggregatedValues } = aggregateData(data.readings, 'average');
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }                
 
-    function przetworzDaneDlaWykresu(readings) {
-        const labels = readings.map(reading => new Date(reading.data_zapisu).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }));
-        const values = readings.map(reading => reading.wartosc);
-        return { labels, values };
-    }
+                const ctx = document.getElementById('wykres').getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Wartości w przedziale dni od (${dzienStart} do ${dzienEnd})`,
+                            data: aggregatedValues,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            zoom: {
+                                pan: {
+                                    enabled: true,
+                                    mode: 'xy', // Przesuwanie w obu kierunkach
+                                },
+                                zoom: {
+                                    wheel: {
+                                        enabled: true, //zoomowanie za pomocą kółka myszy
+                                        speed: 0.1
+                                    },
+                                    drag: {
+                                        enabled: true, //zoomowanie za pomocą przeciągania
+                                    },
+                                    pinch: {
+                                        enabled: true, //zoomowanie za pomocą gestów
+                                    }
+                                },
+                            },
+                            legend: {
+                                display: true
+                            },
+                            title: {
+                                display: true,
+                                text: `Wykres dla przedziału dni od ${dzienStart} - ${dzienEnd}`
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Czas'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Wartość'
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Błąd:', error));;
+        }
+    }   
     
 
     // Reset widoczność i wartości
@@ -422,61 +635,7 @@ document.addEventListener('DOMContentLoaded', function () {
             p2.style.display = 'inline';
         }
         submit.style.display = 'inline';
-    }
-    // do wywalenia
-    function rysujWykres(labels, data, tytul) {
-        const ctx = document.getElementById('wykres').getContext('2d');
-        // Usunięcie istniejącego wykresu (jeśli istnieje)
-        if (window.mojWykres) {
-            window.mojWykres.destroy();
-        }
-    
-        // Tworzenie nowego wykresu
-        window.mojWykres = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels, // Oś X
-                datasets: [{
-                    label: tytul,
-                    data: data, // Oś Y
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    fill: false,
-                    tension: 0.1 // Wygląd linii
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    tooltip: {
-                        enabled: true
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Zakres'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Wartości'
-                        }
-                    }
-                }
-            }
-        });
-    
-        // Pokazanie wykresu
-        document.getElementById('wykres').style.display = 'block';
-    }
-    
+    }   
     
     // function fetchData(url, options = {}) {
     //     showSpinner(); // Pokaż spinner przed rozpoczęciem fetch

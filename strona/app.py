@@ -309,17 +309,42 @@ def odczyty_rok():
 
     id_prad = parametr['id_prad']
 
+    # with recursive to tworzenie listy miesięcy od 1 do 12  
+    # left join łączy tabelę odczyty, aby uwzględnić także te miesiące, w których nie ma danych
     query = """
+        WITH RECURSIVE months AS (
+            SELECT 1 AS miesiac
+            UNION ALL
+            SELECT miesiac + 1
+            FROM months
+            WHERE miesiac < 12
+        )
         SELECT 
-            MONTH(data_zapisu) AS miesiac, 
-            IFNULL(AVG(wartosc), 0) AS srednia 
-        FROM odczyty
-        WHERE YEAR(data_zapisu) = %s AND id_prad = %s
-        GROUP BY MONTH(data_zapisu)
-        ORDER BY miesiac
+            m.miesiac, 
+            IFNULL(AVG(o.wartosc), 0) AS srednia
+        FROM months m
+        LEFT JOIN odczyty o 
+            ON MONTH(o.data_zapisu) = m.miesiac 
+            AND YEAR(o.data_zapisu) = %s 
+            AND o.id_prad = %s
+        GROUP BY m.miesiac
+        ORDER BY m.miesiac
     """
     cursor.execute(query, (rok, id_prad,))
     result = cursor.fetchall()
+
+
+    # query = """
+    #     SELECT 
+    #         MONTH(data_zapisu) AS miesiac, 
+    #         IFNULL(AVG(wartosc), 0) AS srednia 
+    #     FROM odczyty
+    #     WHERE YEAR(data_zapisu) = %s AND id_prad = %s
+    #     GROUP BY MONTH(data_zapisu)
+    #     ORDER BY miesiac
+    # """
+    # cursor.execute(query, (rok, id_prad,))
+    # result = cursor.fetchall()
     
     connection.close()
     return jsonify({'readings': result})
