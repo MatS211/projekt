@@ -129,6 +129,9 @@ def coil_daily_summary():
             'start_time': format_datetime(start_time), 
             'end_time': format_datetime(datetime.now())  
         })
+
+        cursor.close()
+        connection.close()
     return jsonify({'status': 'success', 'summary': summary})
 
 @app.route('/api/dzien', methods=['POST'])
@@ -203,7 +206,8 @@ def get_month_data():
     {"data_zapisu": f"{year}-{month:02d}-{row['dzien']:02d}", "srednia_wartosc": row['srednia_wartosc']}
     for row in data
     ]
-
+    cursor.close()
+    connection.close()
 
     return jsonify({"readings": readings})
 
@@ -333,19 +337,7 @@ def odczyty_rok():
     cursor.execute(query, (rok, id_prad,))
     result = cursor.fetchall()
 
-
-    # query = """
-    #     SELECT 
-    #         MONTH(data_zapisu) AS miesiac, 
-    #         IFNULL(AVG(wartosc), 0) AS srednia 
-    #     FROM odczyty
-    #     WHERE YEAR(data_zapisu) = %s AND id_prad = %s
-    #     GROUP BY MONTH(data_zapisu)
-    #     ORDER BY miesiac
-    # """
-    # cursor.execute(query, (rok, id_prad,))
-    # result = cursor.fetchall()
-    
+    cursor.close()
     connection.close()
     return jsonify({'readings': result})
 

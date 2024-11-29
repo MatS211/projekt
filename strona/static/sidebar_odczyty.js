@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Konfiguracja na podstawie wybranej opcji
         switch (nazwaOpcji) {
             case "dzien":
+                input.value = "";
                 configureForm("WYBIERZ DZIEŃ</br>" + selectedPrad + "</br>", "text", false, false, false, false);
                 submit.addEventListener('click', () => sendDzienData(input.value)); // Funkcja dla "dzien"
                 flatpickr(input, { 
@@ -59,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 break;
             case "miesiac":
+                input.value = "";
                 configureForm("WYBIERZ MIESIĄC</br>" + selectedPrad + "</br>", "text", false, false, false);
                 submit.addEventListener('click', () => sendMiesiacData(input.value)); // Funkcja dla "miesiac"
                 flatpickr(input, { 
@@ -70,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 break;
             case "rok":
+                input.value = "";
                 configureForm("WYBIERZ ROK</br>" + selectedPrad + "</br>", "text", false, false, false);
                 submit.addEventListener('click', () => sendRokData(input.value)); // Funkcja dla "rok"
                 flatpickr(input, { 
@@ -81,6 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 break;
             case "godzina":
+                input.value = "";
+                input2.value = "";
+                input3.value - "";
                 configureForm("WYBIERZ DZIEŃ I PRZEDZIAŁ GODZIN</br>" + selectedPrad + "</br>", "text", true, true, true, "Godzina początkowa: ", "Godzina końcowa: ");
                 submit.addEventListener('click', () => sendGodzinaData(input.value, input2.value, input3.value)); // Funkcja dla "godzina"
                 flatpickr(input, { 
@@ -106,6 +112,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 break;
             case "przedzial-dni":
+                input.value="";
+                input2.value = "";
                 configureForm("WYBIERZ PRZEDZIAŁ DNI</br>" + selectedPrad + "</br>", "text", true, false, true, "Dzień początkowy", "Dzień końcowy");
                 submit.addEventListener('click', () => sendPrzedzialDniData(input.value, input2.value)); // Funkcja dla "przedzial-dni"
                 flatpickr(input, { 
@@ -205,8 +213,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                 annotations: {
                                     line1: {
                                         type: 'line',
-                                        yMin: 10,
-                                        yMax: 10,
+                                        yMin: limit_min(),
+                                        yMax: limit_min(),
                                         borderColor: 'red',  
                                         borderWidth: 2,      
                                         label: {
@@ -217,8 +225,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                     },
                                     line2: {
                                         type: 'line',
-                                        yMin: 20,
-                                        yMax: 20,
+                                        yMin: limit_max(),
+                                        yMax: limit_max(),
                                         borderColor: 'blue',
                                         borderWidth: 2,
                                         label: {
@@ -320,6 +328,34 @@ document.addEventListener('DOMContentLoaded', function () {
                                     text: 'Średnia wartość'
                                 }
                             }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: limit_min(),
+                                    yMax: limit_min(),
+                                    borderColor: 'red',  
+                                    borderWidth: 2,      
+                                    label: {
+                                        content: 'Dolny zakres standardowy',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                },
+                                line2: {
+                                    type: 'line',
+                                    yMin: limit_max(),
+                                    yMax: limit_max(),
+                                    borderColor: 'blue',
+                                    borderWidth: 2,
+                                    label: {
+                                        content: 'Górny zakres standardowy',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                }
+                            }
                         }
                     }
                 });
@@ -398,6 +434,34 @@ document.addEventListener('DOMContentLoaded', function () {
                             },
                             y: {
                                 beginAtZero: true
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: limit_min(),
+                                    yMax: limit_min(),
+                                    borderColor: 'red',  
+                                    borderWidth: 2,      
+                                    label: {
+                                        content: 'Dolny zakres standardowy',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                },
+                                line2: {
+                                    type: 'line',
+                                    yMin: limit_max(),
+                                    yMax: limit_max(),
+                                    borderColor: 'blue',
+                                    borderWidth: 2,
+                                    label: {
+                                        content: 'Górny zakres standardowy',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                }
                             }
                         }
                     }
@@ -480,6 +544,34 @@ document.addEventListener('DOMContentLoaded', function () {
                                 title: {
                                     display: true,
                                     text: 'Wartość'
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: limit_min(),
+                                    yMax: limit_min(),
+                                    borderColor: 'red',  
+                                    borderWidth: 2,      
+                                    label: {
+                                        content: 'Dolny zakres standardowy',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                },
+                                line2: {
+                                    type: 'line',
+                                    yMin: limit_max(),
+                                    yMax: limit_max(),
+                                    borderColor: 'blue',
+                                    borderWidth: 2,
+                                    label: {
+                                        content: 'Górny zakres standardowy',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
                                 }
                             }
                         }
@@ -637,6 +729,34 @@ document.addEventListener('DOMContentLoaded', function () {
                                     text: 'Wartość'
                                 }
                             }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: limit_min(),
+                                    yMax: limit_min(),
+                                    borderColor: 'red',  
+                                    borderWidth: 2,      
+                                    label: {
+                                        content: 'Dolny zakres standardowy',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                },
+                                line2: {
+                                    type: 'line',
+                                    yMin: limit_max(),
+                                    yMax: limit_max(),
+                                    borderColor: 'blue',
+                                    borderWidth: 2,
+                                    label: {
+                                        content: 'Górny zakres standardowy',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                }
+                            }
                         }
                     }
                 });
@@ -689,14 +809,40 @@ document.addEventListener('DOMContentLoaded', function () {
         submit.style.display = 'inline';
     }   
     
+    // napraw to
+    function limit_max() {
+        console.log("limit_max");
+        if (selectedPrad === "L1" || selectedPrad === "L2" || selectedPrad === "L3") {
+            return 20;
+        } else if (selectedPrad === "N" || selectedPrad === "Asymetria") {
+            return 5;
+        } else if (selectedPrad === "Czestotliwosc sieci") {
+            return 50;
+        }
+        return null; // Zwróć null, jeśli brak dopasowania
+    }
+    
+    function limit_min() {        
+        console.log("limit_min");
+        if (selectedPrad === "L1" || selectedPrad === "L2" || selectedPrad === "L3") {
+            return 10;
+        } else if (selectedPrad === "N" || selectedPrad === "Asymetria") {
+            return 0;
+        } else if (selectedPrad === "Czestotliwosc sieci") {
+            return 50;
+        }
+        return null; 
+    }
+    
+    
     function fetchData(url, options = {}) {
-        showSpinner(); // Pokaż spinner przed rozpoczęciem fetch
+        showSpinner(); //spinner przed rozpoczęciem fetch
         return fetch(url, options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                // Sprawdzamy, czy odpowiedź jest w formacie JSON
+                // sprawdzanie, czy odpowiedź jest w formacie JSON
                 const contentType = response.headers.get('Content-Type');
                 if (contentType && contentType.includes('application/json')) {
                     return response.json();
@@ -708,7 +854,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Błąd:', error);
             })
             .finally(() => {
-                hideSpinner(); // Ukryj spinner po zakończeniu fetch
+                hideSpinner(); // spinner po zakończeniu fetch
             });
     }
     
